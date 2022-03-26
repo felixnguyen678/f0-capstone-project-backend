@@ -1,0 +1,20 @@
+
+@startuml
+
+skinparam actorStyle awesome
+"User" as User
+(Manage resource alert) as ManageResourceAlert
+(Create resource alert) as CreateResourceAlert
+(View resource alert) as ViewResourceAlert
+(Edit resource alert) as EditResourceAlert
+(Remove resource alert) as RemoveResourceAlert
+
+User --> ManageResourceAlert
+
+ManageResourceAlert ..>ViewResourceAlert: include
+ManageResourceAlert ..>EditResourceAlert: include
+ManageResourceAlert ..>CreateResourceAlert: include
+ManageResourceAlert ..>RemoveResourceAlert: include
+note right of User: The use can be project manager,\n owner, developer.
+
+@enduml

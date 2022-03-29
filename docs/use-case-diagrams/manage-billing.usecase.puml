@@ -2,13 +2,13 @@
 
 skinparam actorStyle awesome
 "User" as User
-(Choose Manage Billing) as ChooseManageBilling
+( Manage Billing) as ManageBilling
 (Show Billing History) as ShowBillingHistory
 (View Invoice Information) as ViewInvoiceInformation
 
-User --> ChooseManageBilling
-(ChooseManageBilling) .> ShowBillingHistory : extend
-(ChooseManageBilling) .> ViewInvoiceInformation : extend
+User --> ManageBilling
+(ManageBilling) .> ShowBillingHistory 
+(ManageBilling) .> ViewInvoiceInformation 
 note right of User:   Owner & Billing manager.
 
 

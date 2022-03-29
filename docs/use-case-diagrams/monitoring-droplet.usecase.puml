@@ -1,0 +1,22 @@
+
+@startuml
+
+skinparam actorStyle awesome
+"User" as User
+(Monitor droplet) as MonitorDroplet
+(Monitor droplet's bandwidth) as MonitorDropletBandwidth
+(Monitor droplet's CPU) as MonitorDropletCPU
+(Monitor droplet's memory) as MonitorDropletMemory
+
+User --> MonitorDroplet
+
+
+MonitorDroplet ..> MonitorDropletBandwidth: include
+MonitorDroplet ..> MonitorDropletCPU: include
+MonitorDroplet ..> MonitorDropletMemory: include
+note right of User: The use can be project manager,\n owner, developer.
+
+
+
+
+@enduml

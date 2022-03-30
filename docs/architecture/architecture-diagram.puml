@@ -30,8 +30,8 @@ frame Application{
     database MongoDB as DB
 }
 
-NodeServer <- ThirdPartyServices
-NodeServer <-- DB
+NodeServer -> ThirdPartyServices
+NodeServer --> DB
 WebServer <- NodeServer
 WebServer --> DockerHub
 NodeServer --> DockerHub

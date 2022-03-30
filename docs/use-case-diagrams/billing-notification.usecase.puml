@@ -1,0 +1,18 @@
+@startuml
+
+skinparam actorStyle awesome
+"User" as User
+( Billing Alert) as BillingAlert
+(Input alert amount) as InputAlertAmount
+(Choose notification methods) as ChooseNotificationMethods
+(Add alerts) as AddAlerts
+
+User --> BillingAlert
+(BillingAlert) ..> AddAlerts 
+(AddAlerts) ..> InputAlertAmount : include
+(AddAlerts) ..> ChooseNotificationMethods : include
+note right of User:   Owner & Billing manager.
+
+
+
+@enduml

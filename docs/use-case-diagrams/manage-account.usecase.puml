@@ -1,0 +1,22 @@
+@startuml
+
+skinparam actorStyle awesome
+"User" as User
+( Manage Account) as ManageAccount
+( Add Account ) as AddAccount
+( Edit Account ) as EditAccount
+( Delete Account) as DeleteAccount
+( Choose Role ) as  ChooseRole
+( Cloud Services ) as CloudServices
+
+User --> ManageAccount
+(ManageAccount) ..> EditAccount 
+(ManageAccount) ..> AddAccount
+(ManageAccount) ..> DeleteAccount
+(EditAccount) ..> ChooseRole
+(EditAccount) ..> CloudServices
+note right of User:   Owner 
+
+
+
+@enduml

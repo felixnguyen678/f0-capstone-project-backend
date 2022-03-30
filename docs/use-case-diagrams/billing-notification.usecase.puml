@@ -3,13 +3,13 @@
 skinparam actorStyle awesome
 "User" as User
 ( Billing Alert) as BillingAlert
-(Input alert amount) as InputAlertAmount
+(Enter alert amount) as EnterAlertAmount
 (Choose notification methods) as ChooseNotificationMethods
 (Add alerts) as AddAlerts
 
 User --> BillingAlert
 (BillingAlert) ..> AddAlerts 
-(AddAlerts) ..> InputAlertAmount : include
+(AddAlerts) ..> EnterAlertAmount : include
 (AddAlerts) ..> ChooseNotificationMethods : include
 note right of User:   Owner & Billing manager.
 

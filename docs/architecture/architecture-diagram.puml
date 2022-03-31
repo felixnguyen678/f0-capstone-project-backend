@@ -1,0 +1,42 @@
+@startuml Api Management in front of AKS
+
+title Web Application Architecture
+actor "End User" as User
+
+
+card WebBrowser as Browser
+
+frame Application{
+
+    frame CloudStorage{
+        cloud "Docker Hub" as DockerHub
+        cloud "Digital Ocean VPS" as DOVPS
+    }
+
+    frame AppFrontend{
+        node "Web Server" as WebServer
+    }
+
+    frame AppBackend{
+        node "NodeJS Server" as NodeServer
+    }
+
+    frame ThirdPartyServices as ThirdPartyServices{
+        node "DigitalOcean API"
+        node "Email Notification"
+        node "SMS Notification"
+    }
+
+    database MongoDB as DB
+}
+
+NodeServer -> ThirdPartyServices
+NodeServer --> DB
+WebServer <- NodeServer
+WebServer --> DockerHub
+NodeServer --> DockerHub
+DockerHub <- DOVPS
+DOVPS <- Browser
+Browser <-- User
+
+@enduml

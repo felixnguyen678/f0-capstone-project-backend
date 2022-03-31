@@ -1,0 +1,52 @@
+ @startuml Todo
+hide circle
+' skinparam linetype ortho
+
+
+entity EmailConfiguration {
+  -id: ObjectID <<generated>>
+  --
+  senderName: string
+  senderEmail: string
+  subject: string
+  enabled: boolean
+  message: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+
+entity User {
+  -id: ObjectID <<generated>>
+  --
+  *username: string
+  *password: string
+  name: string
+  role: "developer" | "project_manager" | "owner" | "billing_manager"
+  isActive: boolean
+  isDeleted: boolean
+  createdAt: Date
+  updatedAt: Date
+}
+
+entity Notification {
+  -id: ObjectID <<generated>>
+  --
+  type: "resource_alert" | "billing_alert"
+  title: string
+  content: string
+  createdAt: Date
+}
+
+entity UserNotification {
+  ~userId: ObjectId
+  ~notificationId: ObjectId
+  --
+  isRead: boolean
+  readAt: Date
+  createdAt: Date
+}
+
+User ||--o{ UserNotification
+Notification ||--o{ UserNotification
+@enduml

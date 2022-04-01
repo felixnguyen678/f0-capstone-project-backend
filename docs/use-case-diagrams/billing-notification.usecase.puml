@@ -1,0 +1,14 @@
+@startuml
+
+skinparam actorStyle awesome
+"User" as User
+( Billing Alert) as BillingAlert
+(Add alert) as AddAlert
+
+User --> BillingAlert
+(BillingAlert) ..> AddAlert : include
+note right of User:   Owner & Billing manager.
+
+
+
+@enduml

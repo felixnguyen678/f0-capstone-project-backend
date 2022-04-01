@@ -1,0 +1,16 @@
+@startuml
+
+skinparam actorStyle awesome
+"User" as User
+( Manage Billing) as ManageBilling
+(Show Billing History) as ShowBillingHistory
+(View Invoice Information) as ViewInvoiceInformation
+
+User --> ManageBilling
+(ManageBilling) .> ShowBillingHistory 
+(ManageBilling) .> ViewInvoiceInformation 
+note right of User:   Owner & Billing manager.
+
+
+
+@enduml

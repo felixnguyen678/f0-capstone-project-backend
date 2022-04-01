@@ -19,7 +19,6 @@ entity EmailConfiguration {
 entity User {
   -id: ObjectID <<generated>>
   --
-  *username: string
   *email: string
   *phoneNumber: string
   *password: string

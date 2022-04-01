@@ -3,18 +3,16 @@
 skinparam actorStyle awesome
 "User" as User
 ( Manage Account) as ManageAccount
-( Add Account ) as AddAccount
+( Create Account ) as CreateAccount
 ( Edit Account ) as EditAccount
 ( Delete Account) as DeleteAccount
-( Choose Role ) as  ChooseRole
-( Cloud Services ) as CloudServices
+( View Account) as ViewAccount
 
 User --> ManageAccount
-(ManageAccount) ..> EditAccount 
-(ManageAccount) ..> AddAccount
-(ManageAccount) ..> DeleteAccount
-(EditAccount) ..> ChooseRole
-(EditAccount) ..> CloudServices
+(ManageAccount) ..> EditAccount : include
+(ManageAccount) ..> CreateAccount : include
+(ManageAccount) ..> DeleteAccount : include
+(ManageAccount) ..> ViewAccount : include
 note right of User:   Owner 
 
 

@@ -20,9 +20,12 @@ entity User {
   -id: ObjectID <<generated>>
   --
   *username: string
+  *email: string
+  *phoneNumber: string
   *password: string
   name: string
   role: "developer" | "project_manager" | "owner" | "billing_manager"
+  isEmailConfirmed: boolean
   isActive: boolean
   isDeleted: boolean
   createdAt: Date

@@ -22,7 +22,7 @@ frame Application{
     }
 
     frame ThirdPartyServices as ThirdPartyServices{
-        node "DigitalOcean API"
+        node "Cloud APIs"
         node "Email Notification"
         node "SMS Notification"
     }

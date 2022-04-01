@@ -6,11 +6,11 @@ hide circle
 entity EmailConfiguration {
   -id: ObjectID <<generated>>
   --
-  senderName: string
-  senderEmail: string
-  subject: string
+  *senderName: string
+  *senderEmail: string
+  *subject: string
   enabled: boolean
-  message: string
+  *message: string
   createdAt: Date
   updatedAt: Date
 }
@@ -32,9 +32,9 @@ entity User {
 entity Notification {
   -id: ObjectID <<generated>>
   --
-  type: "resource_alert" | "billing_alert"
-  title: string
-  content: string
+  *type: "resource_alert" | "billing_alert"
+  *title: string
+  *content: string
   createdAt: Date
 }
 
@@ -42,7 +42,7 @@ entity UserNotification {
   ~userId: ObjectId
   ~notificationId: ObjectId
   --
-  isRead: boolean
+  *isRead: boolean
   readAt: Date
   createdAt: Date
 }

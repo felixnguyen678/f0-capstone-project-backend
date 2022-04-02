@@ -1,0 +1,97 @@
+@startuml
+
+skinparam actorStyle awesome
+left to right direction
+
+"Billing Manager" as BillingManager
+"Owner" as Owner
+"Developer" as Developer
+"Project Manager" as ProjectManager
+
+
+package Application{
+  usecase "Login platform" as Login
+  usecase "Choose Cloud Service" as ChooseCloudService
+  usecase "Login by Authorization Key" as EnterAuthKey
+  usecase "Billing Alert" as BillingAlert
+  usecase "Add Alert" as AddAlert
+  usecase "Manage Account" as ManageAccount
+  usecase "View Accounts" as ViewAccounts
+  usecase "Create Account" as CreateAccount
+  usecase "Delete Account" as DeleteAccount
+  usecase "Edit Account" as EditAccount
+  usecase "Manage Billing" as ManageBilling
+  usecase "Show Billing History" as ShowBillingHistory
+  usecase "View Invoice Information" as ViewInvoiceInformation
+  usecase "Manage Container"  as ManageContainer
+  usecase "View Container" as ViewContainer
+  usecase "Start Container" as StartContainer
+  usecase "Stop Container" as StopContainer
+  usecase "Remove Container" as RemoveContainer
+  usecase "Monitor Droplet" as MonitorDroplet
+  usecase "Droplet's bandwidth" as MonitorDropletBandwidth
+  usecase "Droplet's CPU" as MonitorDropletCPU
+  usecase "Droplet's Memory" as MonitorDropletMemory
+  usecase "Droplet's Disk Usage" as MonitorDropletDisk
+  usecase "Droplet's Disk IO" as MonitorDropletDiskIO
+  usecase "Manage Resource Alert" as ManageResourceAlert
+  usecase "Create Resource Alert" as CreateResourceAlert
+  usecase "View Resource Alert" as ViewResourceAlert
+  usecase "Edit Resource Alert" as EditResourceAlert
+  usecase "Remove Resource Alert" as RemoveResourceAlert
+}
+
+
+' Relaction with usecases
+(ChooseCloudService) ..> EnterAuthKey : include
+(Login) ..> ChooseCloudService : include
+(BillingAlert) ..> AddAlert: include
+(ManageAccount) ..> ViewAccounts: include
+(ViewAccounts) ..> CreateAccount: extend
+(ViewAccounts) ..> EditAccount: extend
+(ViewAccounts) ..> DeleteAccount: extend
+(ManageBilling) ..> ShowBillingHistory: include
+(ManageBilling) ..> ViewInvoiceInformation: include
+(ManageContainer) ..> ViewContainer: include
+(ManageContainer) ..> StartContainer: include
+(ManageContainer) ..> StopContainer: include
+(ManageContainer) ..> RemoveContainer: include
+(MonitorDroplet) ..> MonitorDropletBandwidth: include
+(MonitorDroplet) ..> MonitorDropletCPU: include
+(MonitorDroplet) ..> MonitorDropletMemory: include
+(MonitorDroplet) ..> MonitorDropletDisk: include
+(MonitorDroplet) ..> MonitorDropletDiskIO: include
+(ManageResourceAlert) ..> CreateResourceAlert: include
+(ManageResourceAlert) ..> ViewResourceAlert: include
+(ManageResourceAlert) ..> EditResourceAlert: include
+(ManageResourceAlert) ..> RemoveResourceAlert: include
+
+
+' Relation with actors
+Owner --> Login
+Developer --> Login
+BillingManager --> Login
+ProjectManager --> Login
+Owner --> BillingAlert
+BillingManager --> BillingAlert
+Owner --> ManageAccount
+Owner --> ManageBilling
+BillingManager --> ManageBilling
+Owner --> ManageContainer
+Developer --> ManageContainer
+Owner --> MonitorDroplet
+Developer --> MonitorDroplet
+Developer --> ManageResourceAlert
+Owner --> ManageResourceAlert
+
+
+
+
+
+
+
+
+' Notes
+note right of EnterAuthKey: This is the authen method \n for DigitalOcean.
+
+@enduml

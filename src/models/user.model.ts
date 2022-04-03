@@ -1,4 +1,6 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, hasMany} from '@loopback/repository';
+import {Notification} from './notification.model';
+import {UserNotification} from './user-notification.model';
 
 @model()
 export class User extends Entity {
@@ -55,6 +57,9 @@ export class User extends Entity {
     default: false,
   })
   isDeleted?: boolean;
+
+  @hasMany(() => Notification, {through: {model: () => UserNotification}})
+  notifications: Notification[];
 
   constructor(data?: Partial<User>) {
     super(data);

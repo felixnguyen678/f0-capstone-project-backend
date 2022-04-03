@@ -11,7 +11,6 @@ export async function main(options: ApplicationConfig = {}) {
   const url = app.restServer.url;
   console.log(`Server is running at ${url}`);
   console.log(`Try ${url}/ping`);
-  console.log('test prehook');
   return app;
 }
 
@@ -21,6 +20,7 @@ if (require.main === module) {
     rest: {
       port: +(process.env.PORT ?? 3000),
       host: process.env.HOST,
+      basePath: '/api',
       // The `gracePeriodForClose` provides a graceful close for http/https
       // servers with keep-alive clients. The default value is `Infinity`
       // (don't force-close). If you want to immediately destroy all sockets

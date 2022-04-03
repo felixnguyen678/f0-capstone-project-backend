@@ -21,6 +21,7 @@ if (require.main === module) {
       port: +(process.env.PORT ?? 3001),
       host: process.env.HOST,
       basePath: '/api',
+
       // The `gracePeriodForClose` provides a graceful close for http/https
       // servers with keep-alive clients. The default value is `Infinity`
       // (don't force-close). If you want to immediately destroy all sockets

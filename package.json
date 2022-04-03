@@ -25,7 +25,7 @@
     "pretest": "yarn run rebuild",
     "posttest": "yarn run lint",
     "docker:build": "docker build -t f0-capstone-project-backend .",
-    "docker:run": "docker run -p 3000:3000 -d f0-capstone-project-backend",
+    "docker:run": "docker run -p 3001:3001 -d f0-capstone-project-backend",
     "premigrate": "yarn run build",
     "migrate": "node ./dist/migrate",
     "preopenapi-spec": "yarn run build",

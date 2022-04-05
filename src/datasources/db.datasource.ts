@@ -1,8 +1,6 @@
 import {inject, lifeCycleObserver, LifeCycleObserver} from '@loopback/core';
 import {juggler} from '@loopback/repository';
 
-console.log({process: process.env.DB_URL});
-
 const config = {
   name: 'db',
   connector: 'mongodb',

@@ -1,10 +1,12 @@
 import {inject, lifeCycleObserver, LifeCycleObserver} from '@loopback/core';
 import {juggler} from '@loopback/repository';
 
+console.log({process: process.env.DB_URL});
+
 const config = {
   name: 'db',
   connector: 'mongodb',
-  url: 'mongodb+srv://root:12345@fzerocluster0.ukqfl.mongodb.net/dev',
+  url: process.env.DB_URL,
   host: '',
   port: 0,
   user: '',

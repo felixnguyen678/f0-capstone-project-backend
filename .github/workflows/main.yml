@@ -48,6 +48,6 @@ jobs:
           envs: CONTAINER_NAME, IMAGE_NAME
           script: |
             #stop, remove container and remove image if existed
-            docker stop $(echo $CONTAINER_NAME) || true && docker rm $(echo $CONTAINER_NAME) || true && docker rmi $(echo $IMAGE_NAME)
+            docker stop $(echo $CONTAINER_NAME) || true && docker rm $(echo $CONTAINER_NAME) || true && docker rmi $(echo $IMAGE_NAME) || true
             #pull and run image from dockerhub
             docker run --name $(echo $CONTAINER_NAME) -p 3001:3001 -d $(echo $IMAGE_NAME)

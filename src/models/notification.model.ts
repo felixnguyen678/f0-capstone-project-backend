@@ -27,6 +27,12 @@ export class Notification extends Entity {
   })
   content: string;
 
+  @property({
+    type: 'date',
+    default: () => new Date(),
+  })
+  createdAt?: string;
+
   constructor(data?: Partial<Notification>) {
     super(data);
   }

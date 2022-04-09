@@ -39,6 +39,18 @@ export class EmailConfiguration extends Entity {
   })
   message: string;
 
+  @property({
+    type: 'date',
+    default: () => new Date(),
+  })
+  createdAt?: string;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+  })
+  updatedAt?: string;
+
   constructor(data?: Partial<EmailConfiguration>) {
     super(data);
   }

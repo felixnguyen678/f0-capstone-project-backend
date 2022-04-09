@@ -21,6 +21,12 @@ export class UserNotification extends Entity {
   })
   notificationId: string;
 
+  @property({
+    type: 'date',
+    default: () => new Date(),
+  })
+  createdAt?: string;
+
   constructor(data?: Partial<UserNotification>) {
     super(data);
   }

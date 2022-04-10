@@ -58,6 +58,18 @@ export class User extends Entity {
   })
   isDeleted?: boolean;
 
+  @property({
+    type: 'date',
+    default: () => new Date(),
+  })
+  createdAt?: string;
+
+  @property({
+    type: 'date',
+    default: () => new Date(),
+  })
+  updatedAt?: string;
+
   @hasMany(() => Notification, {through: {model: () => UserNotification}})
   notifications: Notification[];
 

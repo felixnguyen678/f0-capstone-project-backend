@@ -1,3 +1,3 @@
 export enum ERequestHeader {
-  DOAuthorization = 'do-authorization',
+  DO_Authorization = 'do-authorization',
 }

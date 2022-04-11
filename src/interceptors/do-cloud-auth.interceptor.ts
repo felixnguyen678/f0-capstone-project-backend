@@ -15,7 +15,7 @@ const doCloudAuthInterceptor: Interceptor = async (
       throw new HttpErrors[401]('Unauthorized');
     }
 
-    const doToken = request.headers[ERequestHeader.DOAuthorization];
+    const doToken = request.headers[ERequestHeader.DO_Authorization];
 
     const apiClient = createApiClient({token: `${doToken}`});
     const response = await apiClient.account.getAccount();

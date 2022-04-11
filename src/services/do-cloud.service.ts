@@ -8,7 +8,7 @@ export class DOCloudService {
   private apiClient;
 
   constructor(@inject(RestBindings.Http.REQUEST) private request: Request) {
-    const doToken = this.request.headers[ERequestHeader.DOAuthorization];
+    const doToken = this.request.headers[ERequestHeader.DO_Authorization];
 
     this.apiClient = createApiClient({token: `${doToken}`});
   }

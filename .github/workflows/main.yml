@@ -16,13 +16,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: create .env file
-        run: |
-          echo $ENV >> .env
-          cat .env
-        env:
-          ENV : ${{secrets.ENV}}
-
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
@@ -57,4 +50,4 @@ jobs:
             #stop, remove container and remove image if existed
             docker stop $(echo $CONTAINER_NAME) || true && docker rm $(echo $CONTAINER_NAME) || true && docker rmi $(echo $IMAGE_NAME) || true
             #pull and run image from dockerhub
-            docker run --name $(echo $CONTAINER_NAME) -p 3001:3001 -d $(echo $IMAGE_NAME)
+            docker run --name $(echo $CONTAINER_NAME) -p 3001:3001 -d --env-file ~/env/backend.env $(echo $IMAGE_NAME)

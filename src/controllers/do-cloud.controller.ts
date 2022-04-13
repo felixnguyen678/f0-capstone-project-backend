@@ -1,4 +1,7 @@
-import {IDropletBandwidthRequest, IMonitoringMetrics} from './../types/do';
+import {
+  IDropletBandwidthRequest,
+  IMonitoringMetrics,
+} from '../types/monitoring';
 import {intercept, service} from '@loopback/core';
 import {get, post, requestBody, response} from '@loopback/rest';
 import {IGetAccountApiResponse} from 'dots-wrapper/dist/account';

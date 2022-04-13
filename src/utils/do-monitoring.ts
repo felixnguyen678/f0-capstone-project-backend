@@ -1,4 +1,4 @@
-import {IMonitoringMetrics} from './../types/do';
+import {IMonitoringMetrics} from '../types/monitoring';
 
 export function convertValuesToChartData(
   values: (string | number)[][],

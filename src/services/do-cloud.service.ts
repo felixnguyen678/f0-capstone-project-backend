@@ -1,4 +1,4 @@
-import {IMonitoringMetrics} from './../types/do';
+import {IMonitoringMetrics} from '../types/monitoring';
 import {inject} from '@loopback/core';
 import {HttpErrors, Request, RestBindings} from '@loopback/rest';
 import {createApiClient} from 'dots-wrapper';

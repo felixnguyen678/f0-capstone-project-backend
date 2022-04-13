@@ -1,5 +1,6 @@
+import {IDropletBandwidthRequest, IMonitoringMetrics} from './../types/do';
 import {intercept, service} from '@loopback/core';
-import {post, response} from '@loopback/rest';
+import {get, post, requestBody, response} from '@loopback/rest';
 import {IGetAccountApiResponse} from 'dots-wrapper/dist/account';
 import {doCloudAuthInterceptor} from '../interceptors';
 import {DOCloudService} from '../services';
@@ -19,5 +20,18 @@ export class DOCloudController {
     const account = await this.doCloudService.getAccount();
 
     return account;
+  }
+
+  @get(`${BASE_BATH}/monitoring/metrics/bandwidth`)
+  @intercept(doCloudAuthInterceptor)
+  @response(200)
+  async doDropletBandwidthMonitoring(
+    @requestBody() dropletBandwidthRequest: IDropletBandwidthRequest,
+  ): Promise<IMonitoringMetrics> {
+    const dropletBandwidthMetrics =
+      await this.doCloudService.getDropletBandwidthMetrics(
+        dropletBandwidthRequest,
+      );
+    return dropletBandwidthMetrics;
   }
 }

@@ -1,5 +1,6 @@
 import {inject} from '@loopback/core';
 import {HttpErrors, Request, RestBindings} from '@loopback/rest';
+import _ from 'lodash';
 import {createApiClient} from 'dots-wrapper';
 import {IGetAccountApiResponse} from 'dots-wrapper/dist/account';
 import {ERequestHeader} from '../constants/enums';
@@ -46,9 +47,8 @@ export class DOCloudService {
           traffic_direction: trafficDirection,
         });
 
-      const {values} = response.data.data.result[0];
-      metrics = convertValuesToChartData(values);
-      return metrics;
+      const values = _.get(response, 'data.data.result[0].values');
+      metrics = values ? convertValuesToChartData(values) : metrics;
     } catch (error) {
       if (error instanceof Error) {
         throw new HttpErrors[400]('Bad Request Error');

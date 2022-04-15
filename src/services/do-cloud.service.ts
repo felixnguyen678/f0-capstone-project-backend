@@ -1,12 +1,12 @@
-import {IMonitoringMetrics} from '../types/monitoring';
 import {inject} from '@loopback/core';
 import {HttpErrors, Request, RestBindings} from '@loopback/rest';
 import {createApiClient} from 'dots-wrapper';
 import {IGetAccountApiResponse} from 'dots-wrapper/dist/account';
 import {ERequestHeader} from '../constants/enums';
-import {IDropletBandwidthRequest} from '../types';
-import {convertDateTo10DigitsTimestamp} from '../utils/timestamp';
+import {IDropletBandwidthPayload} from '../types';
+import {IMonitoringMetrics} from '../types/monitoring';
 import {convertValuesToChartData} from '../utils/do-monitoring';
+import {convertDateTo10DigitsTimestamp} from '../utils/timestamp';
 
 export class DOCloudService {
   private apiClient;
@@ -24,15 +24,18 @@ export class DOCloudService {
   }
 
   async getDropletBandwidthMetrics(
-    requestData: IDropletBandwidthRequest,
+    requestData: IDropletBandwidthPayload,
   ): Promise<IMonitoringMetrics> {
     const {hostId, start, end, networkInterface, trafficDirection} =
       requestData;
     const startDate = new Date(start);
     const endDate = new Date(end);
+
     const startTimestamp = convertDateTo10DigitsTimestamp(startDate);
     const endTimestamp = convertDateTo10DigitsTimestamp(endDate);
+
     let metrics: IMonitoringMetrics = {xValues: [], yValues: []};
+
     try {
       const response =
         await this.apiClient.monitoring.getDropletBandwidthMetrics({

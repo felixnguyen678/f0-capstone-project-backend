@@ -8,6 +8,7 @@ import {IDropletBandwidthPayload} from '../types';
 import {IMonitoringMetrics} from '../types/monitoring';
 import {convertValuesToChartData} from '../utils/do-monitoring';
 import {convertDateTo10DigitsTimestamp} from '../utils/timestamp';
+import {IListDropletsApiResponse} from 'dots-wrapper/dist/droplet';
 
 export class DOCloudService {
   private apiClient;
@@ -20,6 +21,15 @@ export class DOCloudService {
 
   async getAccount(): Promise<IGetAccountApiResponse> {
     const response = await this.apiClient.account.getAccount();
+
+    return response.data;
+  }
+
+  async getDroplets(): Promise<IListDropletsApiResponse> {
+    const input = {
+      per_page: 100,
+    };
+    const response = await this.apiClient.droplet.listDroplets(input);
 
     return response.data;
   }

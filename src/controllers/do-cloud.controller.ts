@@ -58,4 +58,17 @@ export class DOCloudController {
       );
     return dropletBandwidthMetrics;
   }
+
+  @get(`${BASE_BATH}/monitoring/metrics/memory`)
+  @intercept(doCloudAuthInterceptor)
+  @response(200)
+  async doDropletMemoryMonitoring(
+    @param.query.string('hostId') hostId: string,
+    @param.query.string('start') start: string,
+    @param.query.string('end') end: string,
+  ): Promise<IMonitoringMetrics> {
+    const dropletBandwidthMetrics =
+      await this.doCloudService.getDropletUsedMemoryMetrics(hostId, start, end);
+    return dropletBandwidthMetrics;
+  }
 }

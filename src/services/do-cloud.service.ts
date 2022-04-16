@@ -12,6 +12,7 @@ import {IMonitoringMetrics} from '../types/monitoring';
 import {convertValuesToChartData} from '../utils/do-monitoring';
 import {convertDateTo10DigitsTimestamp} from '../utils/timestamp';
 import {IListDropletsApiResponse} from 'dots-wrapper/dist/droplet';
+import {first} from 'lodash';
 
 export class DOCloudService {
   private apiClient;
@@ -63,7 +64,75 @@ export class DOCloudService {
         });
 
       const values = get(response, 'data.data.result[0].values');
-      metrics = values ? convertValuesToChartData(values) : metrics;
+      metrics = Array.isArray(values)
+        ? convertValuesToChartData(values)
+        : metrics;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new HttpErrors[400]('Bad Request Error');
+      }
+    }
+
+    return metrics;
+  }
+
+  async getDropletUsedMemoryMetrics(
+    hostId: string,
+    start: string,
+    end: string,
+  ): Promise<IMonitoringMetrics> {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    const startTimestamp = convertDateTo10DigitsTimestamp(startDate);
+    const endTimestamp = convertDateTo10DigitsTimestamp(endDate);
+
+    let metrics: IMonitoringMetrics = {xValues: [], yValues: []};
+
+    try {
+      const totalMemoryResponse =
+        await this.apiClient.monitoring.getDropletTotalMemoryMetrics({
+          host_id: hostId,
+          start: startTimestamp,
+          end: endTimestamp,
+        });
+
+      const availableMemoryResponse =
+        await this.apiClient.monitoring.getDropletAvailableMemoryMetrics({
+          host_id: hostId,
+          start: startTimestamp,
+          end: endTimestamp,
+        });
+
+      const totalMemoryValues = get(
+        totalMemoryResponse,
+        'data.data.result[0].values',
+      );
+      const availableMemoryValues = get(
+        availableMemoryResponse,
+        'data.data.result[0].values',
+      );
+
+      if (
+        totalMemoryValues &&
+        availableMemoryValues &&
+        Array.isArray(totalMemoryValues) &&
+        Array.isArray(availableMemoryValues)
+      ) {
+        const usedMemoryValues: (string | number)[][] = [];
+        totalMemoryValues.forEach((values, index) => {
+          // used memory percentage will be equal to 1 - ( available memory / total memory)
+          const newValue: (string | number)[] = [
+            String(first(values)),
+            1 -
+              Number(get(availableMemoryValues, `[${index}][1]`)) /
+                Number(get(values, '[1]')),
+          ];
+          usedMemoryValues.push(newValue);
+        });
+
+        metrics = convertValuesToChartData(usedMemoryValues);
+      }
     } catch (error) {
       if (error instanceof Error) {
         throw new HttpErrors[400]('Bad Request Error');

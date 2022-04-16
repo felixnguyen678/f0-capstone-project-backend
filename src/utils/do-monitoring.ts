@@ -1,5 +1,6 @@
 import {GetDropletCpuMetricsResponse} from 'dots-wrapper/dist/monitoring';
 import {first, get, isEmpty} from 'lodash';
+import {ECPUMetricMode} from '../types/CPU';
 import {IMonitoringMetrics, TMonitoringValues} from '../types/monitoring';
 import {calculateUsedCPUPercentage} from './cpu-calculate';
 
@@ -52,14 +53,25 @@ export function getUsedCPUPercentage(
   cpuMetrics: GetDropletCpuMetricsResponse,
 ): (string | number)[][] {
   const calculatedMetricResult: (string | number)[][] = [];
-  const cpuMetricsResult = get(cpuMetrics, 'data.data.result');
 
-  const MOCK_TIMESTAMP = 1649510700;
+  const cpuMetricsResult = get(cpuMetrics, 'data.data.result') as object[];
+  const idleModeCPU = cpuMetricsResult.find(item => {
+    const mode = get(item, 'metric.mode');
+    return mode === ECPUMetricMode.IDLE;
+  });
 
-  const usedCPUPercentage = calculateUsedCPUPercentage(
-    MOCK_TIMESTAMP,
-    cpuMetricsResult,
-  );
+  const idleModeCPUValues = get(idleModeCPU, 'values');
+
+  if (Array.isArray(idleModeCPUValues)) {
+    idleModeCPUValues.forEach((item, index) => {
+      const [timestamp] = item;
+      const usedCPUPercentage = calculateUsedCPUPercentage(
+        timestamp,
+        cpuMetricsResult,
+      );
+      calculatedMetricResult.push([timestamp, usedCPUPercentage]);
+    });
+  }
 
   return calculatedMetricResult;
 }

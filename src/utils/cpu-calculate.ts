@@ -1,10 +1,11 @@
 import get from 'lodash/get';
+import {IMonitoringMetricsResult, TMonitoringValues} from '../types';
 import {ECPUMetricMode} from '../types/CPU';
 import {getValueByTimestamp} from './do-monitoring';
 
 export function calculateCPUTotal(
   timestamp: number,
-  cpuMetricsResult: object[],
+  cpuMetricsResult: IMonitoringMetricsResult[],
 ): number {
   if (!Array.isArray(cpuMetricsResult)) {
     return 0;
@@ -12,12 +13,6 @@ export function calculateCPUTotal(
 
   const total = cpuMetricsResult.reduce((previousValue, currentItem) => {
     const currentValues = get(currentItem, 'values');
-
-    console.log({
-      mode: get(currentItem, 'metric.mode'),
-      values: currentValues,
-    });
-
     const currentValue = getValueByTimestamp(timestamp, currentValues);
 
     return previousValue + currentValue;
@@ -28,7 +23,7 @@ export function calculateCPUTotal(
 
 export function getValueWithIdleModeCPU(
   timestamp: number,
-  cpuMetricsResult: object[],
+  cpuMetricsResult: IMonitoringMetricsResult[],
 ): number {
   if (!Array.isArray(cpuMetricsResult)) {
     return 0;
@@ -39,7 +34,8 @@ export function getValueWithIdleModeCPU(
     return mode === ECPUMetricMode.IDLE;
   });
 
-  const values = get(idleModeCPU, 'values');
+  const values = get(idleModeCPU, 'values') as TMonitoringValues;
+
   const value = getValueByTimestamp(timestamp, values);
 
   return value;
@@ -47,7 +43,7 @@ export function getValueWithIdleModeCPU(
 
 export function calculateUsedCPUPercentage(
   timestamp: number,
-  cpuMetricsResult: object[],
+  cpuMetricsResult: IMonitoringMetricsResult[],
 ): number {
   const cpuTotalValue = calculateCPUTotal(timestamp, cpuMetricsResult);
 

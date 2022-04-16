@@ -10,6 +10,7 @@ import {
   calculateUsedMemoryPercentage,
   convertValuesToChartData,
   getUsedCPUPercentage,
+  optimizeCPUMetricsResponse,
 } from '../utils/do-monitoring';
 import {convertDateTo10DigitsTimestamp} from '../utils/timestamp';
 import {
@@ -152,7 +153,9 @@ export class DOCloudService {
         end: endTimestamp,
       });
 
-      const values = getUsedCPUPercentage(response);
+      const optimizedResponse = optimizeCPUMetricsResponse(response);
+
+      const values = getUsedCPUPercentage(optimizedResponse);
 
       metrics = Array.isArray(values)
         ? convertValuesToChartData(values)

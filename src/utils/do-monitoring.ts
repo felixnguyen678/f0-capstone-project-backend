@@ -1,7 +1,14 @@
 import {GetDropletCpuMetricsResponse} from 'dots-wrapper/dist/monitoring';
-import {first, get, isEmpty} from 'lodash';
+import first from 'lodash/first';
+import get from 'lodash/get';
+import isEmpty from 'lodash/isEmpty';
+import round from 'lodash/round';
 import {ECPUMetricMode} from '../types/CPU';
-import {IMonitoringMetrics, TMonitoringValues} from '../types/monitoring';
+import {
+  IMonitoringMetrics,
+  IMonitoringMetricsResult,
+  TMonitoringValues,
+} from '../types/monitoring';
 import {calculateUsedCPUPercentage} from './cpu-calculate';
 
 export function convertValuesToChartData(
@@ -16,7 +23,8 @@ export function convertValuesToChartData(
       metrics.xValues.push(date);
 
       const yValue = Number(get(value, '[1]'));
-      metrics.yValues.push(yValue);
+      const formatYValue = round(yValue, 7);
+      metrics.yValues.push(formatYValue);
     });
   }
 
@@ -54,7 +62,11 @@ export function getUsedCPUPercentage(
 ): (string | number)[][] {
   const calculatedMetricResult: (string | number)[][] = [];
 
-  const cpuMetricsResult = get(cpuMetrics, 'data.data.result') as object[];
+  const cpuMetricsResult = get(
+    cpuMetrics,
+    'data.data.result',
+  ) as IMonitoringMetricsResult[];
+
   const idleModeCPU = cpuMetricsResult.find(item => {
     const mode = get(item, 'metric.mode');
     return mode === ECPUMetricMode.IDLE;
@@ -63,10 +75,10 @@ export function getUsedCPUPercentage(
   const idleModeCPUValues = get(idleModeCPU, 'values');
 
   if (Array.isArray(idleModeCPUValues)) {
-    idleModeCPUValues.forEach((item, index) => {
+    idleModeCPUValues.forEach(item => {
       const [timestamp] = item;
       const usedCPUPercentage = calculateUsedCPUPercentage(
-        timestamp,
+        timestamp as number,
         cpuMetricsResult,
       );
       calculatedMetricResult.push([timestamp, usedCPUPercentage]);
@@ -91,4 +103,42 @@ export function getValueByTimestamp(
   const value = get(pairValue, '[1]');
 
   return value ? Number(value) : 0;
+}
+
+export function optimizeCPUMetricsResponse(
+  cpuMetrics: GetDropletCpuMetricsResponse,
+): GetDropletCpuMetricsResponse {
+  const newCPUMetrics = {...cpuMetrics};
+  const cpuMetricsResult = get(
+    newCPUMetrics,
+    'data.data.result',
+  ) as IMonitoringMetricsResult[];
+
+  const MIN_VALUES_COUNT = 25;
+  const idleModeCPU = cpuMetricsResult.find(item => {
+    const mode = get(item, 'metric.mode');
+    return mode === ECPUMetricMode.IDLE;
+  });
+  const idleModeCPUValues = get(idleModeCPU, 'values');
+
+  if (
+    !Array.isArray(cpuMetricsResult) ||
+    idleModeCPUValues!.length < MIN_VALUES_COUNT
+  ) {
+    return cpuMetrics;
+  }
+
+  cpuMetricsResult.forEach(item => {
+    const values = get(item, 'values') as TMonitoringValues;
+
+    const newValues = values.filter((_, index) => {
+      return index % 2 === 0;
+    }) as TMonitoringValues;
+
+    item.values = newValues;
+  });
+
+  newCPUMetrics.data.data.result = cpuMetricsResult;
+
+  return newCPUMetrics;
 }

@@ -57,6 +57,7 @@
     "@loopback/service-proxy": "^4.1.2",
     "dotenv": "^16.0.0",
     "dots-wrapper": "^3.7.4",
+    "lodash": "^4.17.21",
     "loopback-connector-mongodb": "^5.2.3",
     "tslib": "^2.0.0"
   },

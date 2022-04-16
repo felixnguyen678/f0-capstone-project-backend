@@ -1,10 +1,7 @@
 import {intercept, service} from '@loopback/core';
 import {get, post, requestBody, response} from '@loopback/rest';
 import {IGetAccountApiResponse} from 'dots-wrapper/dist/account';
-import {
-  IGetDropletApiResponse,
-  IListDropletsApiResponse,
-} from 'dots-wrapper/dist/droplet';
+import {IListDropletsApiResponse} from 'dots-wrapper/dist/droplet';
 import {doCloudAuthInterceptor} from '../interceptors';
 import {DOCloudService} from '../services';
 import {
@@ -42,11 +39,11 @@ export class DOCloudController {
   @intercept(doCloudAuthInterceptor)
   @response(200)
   async doDropletBandwidthMonitoring(
-    @requestBody() dropletBandwidthRequest: IDropletBandwidthPayload,
+    @requestBody() dropletBandwidthPayload: IDropletBandwidthPayload,
   ): Promise<IMonitoringMetrics> {
     const dropletBandwidthMetrics =
       await this.doCloudService.getDropletBandwidthMetrics(
-        dropletBandwidthRequest,
+        dropletBandwidthPayload,
       );
     return dropletBandwidthMetrics;
   }

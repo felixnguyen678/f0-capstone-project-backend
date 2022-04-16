@@ -1,18 +1,22 @@
+import {inject} from '@loopback/core';
+import {HttpErrors, Request, RestBindings} from '@loopback/rest';
+import {createApiClient} from 'dots-wrapper';
+import {IGetAccountApiResponse} from 'dots-wrapper/dist/account';
+import {IListDropletsApiResponse} from 'dots-wrapper/dist/droplet';
+import get from 'lodash/get';
+import {ERequestHeader} from '../constants/enums';
+import {IMonitoringMetrics} from '../types/monitoring';
+import {
+  calculateUsedMemoryPercentage,
+  convertValuesToChartData,
+  getUsedCPUPercentage,
+  optimizeCPUMetricsResponse,
+} from '../utils/do-monitoring';
+import {convertDateTo10DigitsTimestamp} from '../utils/timestamp';
 import {
   EBandwidthNetworkInterface,
   EBandwidthTrafficDirection,
 } from './../constants/enums/monitoring';
-import {inject} from '@loopback/core';
-import {HttpErrors, Request, RestBindings} from '@loopback/rest';
-import get from 'lodash/get';
-import {createApiClient} from 'dots-wrapper';
-import {IGetAccountApiResponse} from 'dots-wrapper/dist/account';
-import {ERequestHeader} from '../constants/enums';
-import {IMonitoringMetrics} from '../types/monitoring';
-import {convertValuesToChartData} from '../utils/do-monitoring';
-import {convertDateTo10DigitsTimestamp} from '../utils/timestamp';
-import {IListDropletsApiResponse} from 'dots-wrapper/dist/droplet';
-import {first} from 'lodash';
 
 export class DOCloudService {
   private apiClient;
@@ -113,27 +117,51 @@ export class DOCloudService {
         'data.data.result[0].values',
       );
 
-      if (
-        totalMemoryValues &&
-        availableMemoryValues &&
-        Array.isArray(totalMemoryValues) &&
-        Array.isArray(availableMemoryValues)
-      ) {
-        const usedMemoryValues: (string | number)[][] = [];
-        totalMemoryValues.forEach((values, index) => {
-          // used memory percentage will be equal to 1 - ( available memory / total memory)
-          const newValue: (string | number)[] = [
-            String(first(values)),
-            1 -
-              Number(get(availableMemoryValues, `[${index}][1]`)) /
-                Number(get(values, '[1]')),
-          ];
-          usedMemoryValues.push(newValue);
-        });
-
+      if (totalMemoryValues && availableMemoryValues) {
+        const usedMemoryValues = calculateUsedMemoryPercentage(
+          availableMemoryValues,
+          totalMemoryValues,
+        );
         metrics = convertValuesToChartData(usedMemoryValues);
       }
     } catch (error) {
+      if (error instanceof Error) {
+        throw new HttpErrors[400]('Bad Request Error');
+      }
+    }
+
+    return metrics;
+  }
+
+  async getDropletCPUMetrics(
+    hostId: string,
+    start: string,
+    end: string,
+  ): Promise<IMonitoringMetrics> {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    const startTimestamp = convertDateTo10DigitsTimestamp(startDate);
+    const endTimestamp = convertDateTo10DigitsTimestamp(endDate);
+
+    let metrics: IMonitoringMetrics = {xValues: [], yValues: []};
+
+    try {
+      const response = await this.apiClient.monitoring.getDropletCpuMetrics({
+        host_id: hostId,
+        start: startTimestamp,
+        end: endTimestamp,
+      });
+
+      const optimizedResponse = optimizeCPUMetricsResponse(response);
+
+      const values = getUsedCPUPercentage(optimizedResponse);
+
+      metrics = Array.isArray(values)
+        ? convertValuesToChartData(values)
+        : metrics;
+    } catch (error) {
+      console.log({error});
       if (error instanceof Error) {
         throw new HttpErrors[400]('Bad Request Error');
       }

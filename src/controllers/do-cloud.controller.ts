@@ -56,6 +56,7 @@ export class DOCloudController {
         networkInterface,
         trafficDirection,
       );
+
     return dropletBandwidthMetrics;
   }
 
@@ -69,6 +70,21 @@ export class DOCloudController {
   ): Promise<IMonitoringMetrics> {
     const dropletBandwidthMetrics =
       await this.doCloudService.getDropletUsedMemoryMetrics(hostId, start, end);
+
+    return dropletBandwidthMetrics;
+  }
+
+  @get(`${BASE_BATH}/monitoring/metrics/cpu`)
+  @intercept(doCloudAuthInterceptor)
+  @response(200)
+  async doDropletCPUMonitoring(
+    @param.query.string('hostId') hostId: string,
+    @param.query.string('start') start: string,
+    @param.query.string('end') end: string,
+  ): Promise<IMonitoringMetrics> {
+    const dropletBandwidthMetrics =
+      await this.doCloudService.getDropletCPUMetrics(hostId, start, end);
+
     return dropletBandwidthMetrics;
   }
 }

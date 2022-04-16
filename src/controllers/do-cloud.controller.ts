@@ -1,13 +1,14 @@
 import {intercept, service} from '@loopback/core';
-import {get, post, requestBody, response} from '@loopback/rest';
+import {get, param, post, requestBody, response} from '@loopback/rest';
 import {IGetAccountApiResponse} from 'dots-wrapper/dist/account';
 import {IListDropletsApiResponse} from 'dots-wrapper/dist/droplet';
+import {
+  EBandwidthNetworkInterface,
+  EBandwidthTrafficDirection,
+} from '../constants/enums/monitoring';
 import {doCloudAuthInterceptor} from '../interceptors';
 import {DOCloudService} from '../services';
-import {
-  IDropletBandwidthPayload,
-  IMonitoringMetrics,
-} from '../types/monitoring';
+import {IMonitoringMetrics} from '../types/monitoring';
 
 const BASE_BATH = '/do-api';
 
@@ -39,11 +40,21 @@ export class DOCloudController {
   @intercept(doCloudAuthInterceptor)
   @response(200)
   async doDropletBandwidthMonitoring(
-    @requestBody() dropletBandwidthPayload: IDropletBandwidthPayload,
+    @param.query.string('hostId') hostId: string,
+    @param.query.string('start') start: string,
+    @param.query.string('end') end: string,
+    @param.query.string('networkInterface')
+    networkInterface: EBandwidthNetworkInterface,
+    @param.query.string('trafficDirection')
+    trafficDirection: EBandwidthTrafficDirection,
   ): Promise<IMonitoringMetrics> {
     const dropletBandwidthMetrics =
       await this.doCloudService.getDropletBandwidthMetrics(
-        dropletBandwidthPayload,
+        hostId,
+        start,
+        end,
+        networkInterface,
+        trafficDirection,
       );
     return dropletBandwidthMetrics;
   }

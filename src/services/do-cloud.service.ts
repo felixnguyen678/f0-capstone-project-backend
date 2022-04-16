@@ -1,10 +1,13 @@
+import {
+  EBandwidthNetworkInterface,
+  EBandwidthTrafficDirection,
+} from './../constants/enums/monitoring';
 import {inject} from '@loopback/core';
 import {HttpErrors, Request, RestBindings} from '@loopback/rest';
 import get from 'lodash/get';
 import {createApiClient} from 'dots-wrapper';
 import {IGetAccountApiResponse} from 'dots-wrapper/dist/account';
 import {ERequestHeader} from '../constants/enums';
-import {IDropletBandwidthPayload} from '../types';
 import {IMonitoringMetrics} from '../types/monitoring';
 import {convertValuesToChartData} from '../utils/do-monitoring';
 import {convertDateTo10DigitsTimestamp} from '../utils/timestamp';
@@ -35,10 +38,12 @@ export class DOCloudService {
   }
 
   async getDropletBandwidthMetrics(
-    requestData: IDropletBandwidthPayload,
+    hostId: string,
+    start: string,
+    end: string,
+    networkInterface: EBandwidthNetworkInterface,
+    trafficDirection: EBandwidthTrafficDirection,
   ): Promise<IMonitoringMetrics> {
-    const {hostId, start, end, networkInterface, trafficDirection} =
-      requestData;
     const startDate = new Date(start);
     const endDate = new Date(end);
 

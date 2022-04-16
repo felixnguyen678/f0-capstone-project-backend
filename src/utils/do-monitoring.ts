@@ -1,6 +1,7 @@
 import {GetDropletCpuMetricsResponse} from 'dots-wrapper/dist/monitoring';
-import {first, get} from 'lodash';
-import {IMonitoringMetrics} from '../types/monitoring';
+import {first, get, isEmpty} from 'lodash';
+import {IMonitoringMetrics, TMonitoringValues} from '../types/monitoring';
+import {calculateUsedCPUPercentage} from './cpu-calculate';
 
 export function convertValuesToChartData(
   values: (string | number)[][],
@@ -47,34 +48,35 @@ export function calculateUsedMemoryPercentage(
   return usedMemoryValues;
 }
 
-export function calculateUsedCPUPercentage(
+export function getUsedCPUPercentage(
   cpuMetrics: GetDropletCpuMetricsResponse,
 ): (string | number)[][] {
-  // INFO: % CPU = 1 - idle / total
   const calculatedMetricResult: (string | number)[][] = [];
   const cpuMetricsResult = get(cpuMetrics, 'data.data.result');
-  if (Array.isArray(cpuMetricsResult)) {
-    const idleMetric = first(
-      cpuMetricsResult.filter(
-        cpuMetric => get(cpuMetric, 'metric.mode') === 'idle',
-      ),
-    );
-    const idleMetricValues = get(idleMetric, 'values');
 
-    // if(Array.isArray(idleMetricValues) && Array.isArray(totalMetricValues)) {
-    //   idleMetricValues.forEach((values, index) => {
-    //     const timestamp = String(first(values))
-    //       const temporaryValue = 1 -  Number(get(values, '[1]')) / Number(get(totalMetricValues, `[${index}][1]`))
+  const MOCK_TIMESTAMP = 1649510700;
 
-    //       const newValues: (string | number)[] = [
-    //         timestamp,
-    //         temporaryValue,
-    //       ];
-
-    //       calculatedMetricResult.push(newValues)
-    //   })
-    // }
-  }
+  const usedCPUPercentage = calculateUsedCPUPercentage(
+    MOCK_TIMESTAMP,
+    cpuMetricsResult,
+  );
 
   return calculatedMetricResult;
+}
+
+export function getValueByTimestamp(
+  timestamp: number,
+  values: TMonitoringValues,
+): number {
+  if (isEmpty(values)) {
+    return 0;
+  }
+
+  const pairValue = values.find(item => {
+    const [currentTimeStamp] = item;
+    return currentTimeStamp === timestamp;
+  });
+  const value = get(pairValue, '[1]');
+
+  return value ? Number(value) : 0;
 }

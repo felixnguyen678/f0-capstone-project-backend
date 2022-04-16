@@ -1,22 +1,21 @@
+import {inject} from '@loopback/core';
+import {HttpErrors, Request, RestBindings} from '@loopback/rest';
+import {createApiClient} from 'dots-wrapper';
+import {IGetAccountApiResponse} from 'dots-wrapper/dist/account';
+import {IListDropletsApiResponse} from 'dots-wrapper/dist/droplet';
+import get from 'lodash/get';
+import {ERequestHeader} from '../constants/enums';
+import {IMonitoringMetrics} from '../types/monitoring';
+import {
+  calculateUsedMemoryPercentage,
+  convertValuesToChartData,
+  getUsedCPUPercentage,
+} from '../utils/do-monitoring';
+import {convertDateTo10DigitsTimestamp} from '../utils/timestamp';
 import {
   EBandwidthNetworkInterface,
   EBandwidthTrafficDirection,
 } from './../constants/enums/monitoring';
-import {inject} from '@loopback/core';
-import {HttpErrors, Request, RestBindings} from '@loopback/rest';
-import get from 'lodash/get';
-import {createApiClient} from 'dots-wrapper';
-import {IGetAccountApiResponse} from 'dots-wrapper/dist/account';
-import {ERequestHeader} from '../constants/enums';
-import {IMonitoringMetrics} from '../types/monitoring';
-import {
-  calculateUsedCPUPercentage,
-  calculateUsedMemoryPercentage,
-  convertValuesToChartData,
-} from '../utils/do-monitoring';
-import {convertDateTo10DigitsTimestamp} from '../utils/timestamp';
-import {IListDropletsApiResponse} from 'dots-wrapper/dist/droplet';
-import {first} from 'lodash';
 
 export class DOCloudService {
   private apiClient;
@@ -153,12 +152,13 @@ export class DOCloudService {
         end: endTimestamp,
       });
 
-      const values = calculateUsedCPUPercentage(response);
+      const values = getUsedCPUPercentage(response);
 
       metrics = Array.isArray(values)
         ? convertValuesToChartData(values)
         : metrics;
     } catch (error) {
+      console.log({error});
       if (error instanceof Error) {
         throw new HttpErrors[400]('Bad Request Error');
       }

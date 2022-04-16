@@ -9,7 +9,11 @@ import {createApiClient} from 'dots-wrapper';
 import {IGetAccountApiResponse} from 'dots-wrapper/dist/account';
 import {ERequestHeader} from '../constants/enums';
 import {IMonitoringMetrics} from '../types/monitoring';
-import {convertValuesToChartData} from '../utils/do-monitoring';
+import {
+  calculateUsedCPUPercentage,
+  calculateUsedMemoryPercentage,
+  convertValuesToChartData,
+} from '../utils/do-monitoring';
 import {convertDateTo10DigitsTimestamp} from '../utils/timestamp';
 import {IListDropletsApiResponse} from 'dots-wrapper/dist/droplet';
 import {first} from 'lodash';
@@ -113,24 +117,11 @@ export class DOCloudService {
         'data.data.result[0].values',
       );
 
-      if (
-        totalMemoryValues &&
-        availableMemoryValues &&
-        Array.isArray(totalMemoryValues) &&
-        Array.isArray(availableMemoryValues)
-      ) {
-        const usedMemoryValues: (string | number)[][] = [];
-        totalMemoryValues.forEach((values, index) => {
-          // used memory percentage will be equal to 1 - ( available memory / total memory)
-          const newValue: (string | number)[] = [
-            String(first(values)),
-            1 -
-              Number(get(availableMemoryValues, `[${index}][1]`)) /
-                Number(get(values, '[1]')),
-          ];
-          usedMemoryValues.push(newValue);
-        });
-
+      if (totalMemoryValues && availableMemoryValues) {
+        const usedMemoryValues = calculateUsedMemoryPercentage(
+          availableMemoryValues,
+          totalMemoryValues,
+        );
         metrics = convertValuesToChartData(usedMemoryValues);
       }
     } catch (error) {
@@ -162,7 +153,8 @@ export class DOCloudService {
         end: endTimestamp,
       });
 
-      const values = get(response, 'data.data.result[0].values');
+      const values = calculateUsedCPUPercentage(response);
+
       metrics = Array.isArray(values)
         ? convertValuesToChartData(values)
         : metrics;

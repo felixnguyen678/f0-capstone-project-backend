@@ -141,4 +141,37 @@ export class DOCloudService {
 
     return metrics;
   }
+
+  async getDropletCPUMetrics(
+    hostId: string,
+    start: string,
+    end: string,
+  ): Promise<IMonitoringMetrics> {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    const startTimestamp = convertDateTo10DigitsTimestamp(startDate);
+    const endTimestamp = convertDateTo10DigitsTimestamp(endDate);
+
+    let metrics: IMonitoringMetrics = {xValues: [], yValues: []};
+
+    try {
+      const response = await this.apiClient.monitoring.getDropletCpuMetrics({
+        host_id: hostId,
+        start: startTimestamp,
+        end: endTimestamp,
+      });
+
+      const values = get(response, 'data.data.result[0].values');
+      metrics = Array.isArray(values)
+        ? convertValuesToChartData(values)
+        : metrics;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new HttpErrors[400]('Bad Request Error');
+      }
+    }
+
+    return metrics;
+  }
 }

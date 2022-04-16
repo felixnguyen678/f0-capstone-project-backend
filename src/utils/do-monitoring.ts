@@ -1,3 +1,4 @@
+import {first, get} from 'lodash';
 import {IMonitoringMetrics} from '../types/monitoring';
 
 export function convertValuesToChartData(
@@ -7,11 +8,11 @@ export function convertValuesToChartData(
 
   if (Array.isArray(values)) {
     values.forEach(value => {
-      const timestamp = value[0] as number;
+      const timestamp = Number(first(value));
       const date = new Date(timestamp * 1000);
       metrics.xValues.push(date);
 
-      const yValue = value[1] as number;
+      const yValue = Number(get(value, '[1]'));
       metrics.yValues.push(yValue);
     });
   }

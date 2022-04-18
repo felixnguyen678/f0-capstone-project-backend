@@ -3,10 +3,10 @@
 skinparam actorStyle awesome
 left to right direction
 
-"Billing Manager" as BillingManager
-"Owner" as Owner
-"Developer" as Developer
-"Project Manager" as ProjectManager
+actor "Owner" as Owner #red
+actor "Billing Manager" as BillingManager #green
+actor "Developer" as Developer #blue
+actor "Project Manager" as ProjectManager #brown
 
 
 package Application{
@@ -68,21 +68,21 @@ package Application{
 
 
 ' Relation with actors
-Owner --> Login
-Developer --> Login
-BillingManager --> Login
-ProjectManager --> Login
-Owner --> BillingAlert
-BillingManager --> BillingAlert
-Owner --> ManageAccount
-Owner --> ManageBilling
-BillingManager --> ManageBilling
-Owner --> ManageContainer
-Developer --> ManageContainer
-Owner --> MonitorDroplet
-Developer --> MonitorDroplet
-Developer --> ManageResourceAlert
-Owner --> ManageResourceAlert
+Owner --> Login #line:red
+Owner --> BillingAlert #line:red
+Owner --> ManageAccount #line:red
+Owner --> ManageBilling #line:red
+Owner --> ManageContainer #line:red
+Owner --> MonitorDroplet #line:red
+Owner --> ManageResourceAlert #line:red
+Developer --> Login #line:blue
+Developer --> ManageContainer #line:blue
+Developer --> MonitorDroplet #line:blue
+Developer --> ManageResourceAlert #line:blue
+BillingManager --> Login #line:green
+BillingManager --> BillingAlert #line:green
+BillingManager --> ManageBilling #line:green
+ProjectManager --> Login #line:brown
 
 
 

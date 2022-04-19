@@ -51,3 +51,5 @@ jobs:
             docker stop $(echo $CONTAINER_NAME) || true && docker rm $(echo $CONTAINER_NAME) || true && docker rmi $(echo $IMAGE_NAME) || true
             #pull and run image from dockerhub
             docker run --name $(echo $CONTAINER_NAME) -p 3001:3001 -d --env-file ~/env/backend.env $(echo $IMAGE_NAME)
+            # add some files to container
+            docker cp ~/keys/ backend:/home/node/app/

@@ -286,4 +286,55 @@ export class DOCloudService {
       throw new HttpErrors[500]('Internal Server Error');
     }
   }
+
+  async restartDropletContainer(
+    hostId: string,
+    containerId: string,
+  ): Promise<void> {
+    try {
+      const ssh = new NodeSSH();
+      const config = await this.getDefaultSSHConfig(hostId);
+      await ssh.connect(config);
+
+      const restartContainerCommand = `docker restart ${containerId}`;
+      await ssh.exec(restartContainerCommand, []);
+    } catch (error) {
+      throw new HttpErrors[500]('Internal Server Error');
+    }
+  }
+
+  async stopDropletContainer(
+    hostId: string,
+    containerId: string,
+  ): Promise<void> {
+    try {
+      const ssh = new NodeSSH();
+      const config = await this.getDefaultSSHConfig(hostId);
+      await ssh.connect(config);
+
+      const stopContainerCommand = `docker stop ${containerId}`;
+      await ssh.exec(stopContainerCommand, []);
+    } catch (error) {
+      throw new HttpErrors[500]('Internal Server Error');
+    }
+  }
+
+  async removeDropletContainer(
+    hostId: string,
+    containerId: string,
+  ): Promise<void> {
+    try {
+      const ssh = new NodeSSH();
+      const config = await this.getDefaultSSHConfig(hostId);
+      await ssh.connect(config);
+
+      const removeContainerCommand = `docker rm --force ${containerId}`;
+
+      console.log({removeContainerCommand});
+
+      await ssh.exec(removeContainerCommand, []);
+    } catch (error) {
+      throw new HttpErrors[500]('Internal Server Error');
+    }
+  }
 }

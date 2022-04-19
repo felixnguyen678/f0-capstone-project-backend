@@ -143,4 +143,34 @@ export class DOCloudController {
   ): Promise<void> {
     await this.doCloudService.startDropletContainer(hostId, containerId);
   }
+
+  @post(`${BASE_BATH}/containers/{id}/restart`)
+  @intercept(doCloudAuthInterceptor)
+  @response(200)
+  async restartDropletContainer(
+    @param.query.string('hostId') hostId: string,
+    @param.path.string('id') containerId: string,
+  ): Promise<void> {
+    await this.doCloudService.restartDropletContainer(hostId, containerId);
+  }
+
+  @post(`${BASE_BATH}/containers/{id}/stop`)
+  @intercept(doCloudAuthInterceptor)
+  @response(200)
+  async stopDropletContainer(
+    @param.query.string('hostId') hostId: string,
+    @param.path.string('id') containerId: string,
+  ): Promise<void> {
+    await this.doCloudService.stopDropletContainer(hostId, containerId);
+  }
+
+  @post(`${BASE_BATH}/containers/{id}/remove`)
+  @intercept(doCloudAuthInterceptor)
+  @response(200)
+  async removeDropletContainer(
+    @param.query.string('hostId') hostId: string,
+    @param.path.string('id') containerId: string,
+  ): Promise<void> {
+    await this.doCloudService.removeDropletContainer(hostId, containerId);
+  }
 }

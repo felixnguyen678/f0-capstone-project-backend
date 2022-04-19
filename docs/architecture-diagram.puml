@@ -8,18 +8,20 @@ card WebBrowser as Browser
 
 frame Application{
 
-    frame CloudStorage{
-        cloud "Docker Hub" as DockerHub
-        cloud "Digital Ocean VPS" as DOVPS
-    }
-
-    frame AppFrontend{
+    
+        cloud "Digital Ocean VPS" as DOVPS {
+            frame AppFrontend{
         node "Web Server" as WebServer
     }
-
-    frame AppBackend{
+            frame AppBackend{
         node "NodeJS Server" as NodeServer
     }
+        }
+    
+
+    
+
+    
 
     frame ThirdPartyServices as ThirdPartyServices{
         node "Cloud APIs"
@@ -31,12 +33,9 @@ frame Application{
 }
 
 NodeServer -> ThirdPartyServices
-NodeServer --> DB
+NodeServer <--> DB
 WebServer <- NodeServer
-WebServer --> DockerHub
-NodeServer --> DockerHub
-DockerHub <- DOVPS
-DOVPS <- Browser
+WebServer <- Browser
 Browser <-- User
 
 @enduml

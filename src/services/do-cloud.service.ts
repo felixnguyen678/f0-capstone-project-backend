@@ -189,7 +189,7 @@ export class DOCloudService {
 
   async getDropletContainerList(hostId: string): Promise<TContainerList> {
     let containerList: TContainerList = [];
-    const getContainerListCommand = `docker ps --format '{"id":"{{ .ID }}", "image": "{{ .Image }}", "names":"{{ .Names }}",  "ports":"{{ .Ports }}", "createdAt":"{{ .CreatedAt }}", "status":"{{ .Status }}"}'`;
+    const getContainerListCommand = `docker ps -a --format '{"id":"{{ .ID }}", "image": "{{ .Image }}", "names":"{{ .Names }}",  "ports":"{{ .Ports }}", "createdAt":"{{ .CreatedAt }}", "status":"{{ .Status }}"}'`;
 
     const privateKeyFilePath = path.resolve(__dirname, '../../keys/f0-droplet');
     const username = 'root';

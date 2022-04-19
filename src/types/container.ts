@@ -5,10 +5,19 @@ export interface IContainer {
   status: string;
   port: string;
   names: string;
+  statsInfo?: IContainerStats;
 }
 
 export type TContainerList = Array<IContainer>;
 
+export interface IContainerMemory {
+  usage: string;
+  usagePercent: string;
+}
+
 export interface IContainerStats {
-  // TODO: CONTAINER STATS HERE
+  cpuPercent: string;
+  memoryInfo: IContainerMemory;
+  netIO: string;
+  blockIO: string;
 }

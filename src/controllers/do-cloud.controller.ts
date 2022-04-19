@@ -1,10 +1,9 @@
-import {TContainerList} from './../types/container';
 import {intercept, service} from '@loopback/core';
-import {get, param, post, requestBody, response} from '@loopback/rest';
+import {get, param, post, response} from '@loopback/rest';
 import {IGetAccountApiResponse} from 'dots-wrapper/dist/account';
 import {
-  IListDropletsApiResponse,
   IGetDropletApiResponse,
+  IListDropletsApiResponse,
 } from 'dots-wrapper/dist/droplet';
 import {
   EBandwidthNetworkInterface,
@@ -13,6 +12,7 @@ import {
 import {doCloudAuthInterceptor} from '../interceptors';
 import {DOCloudService} from '../services';
 import {IMonitoringMetrics} from '../types/monitoring';
+import {IContainer, TContainerList} from './../types/container';
 
 const BASE_BATH = '/do-api';
 
@@ -109,7 +109,7 @@ export class DOCloudController {
   @get(`${BASE_BATH}/containers`)
   @intercept(doCloudAuthInterceptor)
   @response(200)
-  async doDropletContainerList(
+  async getDODropletContainerList(
     @param.query.string('hostId') hostId: string,
   ): Promise<TContainerList> {
     const containerList = await this.doCloudService.getDropletContainerList(
@@ -117,5 +117,19 @@ export class DOCloudController {
     );
 
     return containerList;
+  }
+  @get(`${BASE_BATH}/containers/{id}`)
+  @intercept(doCloudAuthInterceptor)
+  @response(200)
+  async doDropletContainerList(
+    @param.query.string('hostId') hostId: string,
+    @param.path.string('id') containerId: string,
+  ): Promise<IContainer> {
+    const container = await this.doCloudService.getDropletContainer(
+      hostId,
+      containerId,
+    );
+
+    return container;
   }
 }

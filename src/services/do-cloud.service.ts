@@ -10,6 +10,10 @@ import get from 'lodash/get';
 import {NodeSSH} from 'node-ssh';
 import path from 'path';
 import {DEFAULT_PRIVATE_KEY_FILE_NAME} from '../constants';
+import {
+  DOCKER_CONTAINER_FORMAT,
+  DOCKER_CONTAINER_STATS_FORMAT,
+} from '../constants/docker-cmd';
 import {ERequestHeader} from '../constants/enums';
 import {IMonitoringMetrics} from '../types/monitoring';
 import {convertStringToContainerList} from '../utils/container';
@@ -24,7 +28,7 @@ import {
   EBandwidthNetworkInterface,
   EBandwidthTrafficDirection,
 } from './../constants/enums/monitoring';
-import {TContainerList} from './../types/container';
+import {IContainer, TContainerList} from './../types/container';
 
 export class DOCloudService {
   private apiClient;
@@ -204,7 +208,7 @@ export class DOCloudService {
 
   async getDropletContainerList(hostId: string): Promise<TContainerList> {
     let containerList: TContainerList = [];
-    const getContainerListCommand = `docker ps -a --format '{"id":"{{ .ID }}", "image": "{{ .Image }}", "names":"{{ .Names }}",  "ports":"{{ .Ports }}", "createdAt":"{{ .CreatedAt }}", "status":"{{ .Status }}"}'`;
+    const getContainerListCommand = `docker ps -a --format ${DOCKER_CONTAINER_FORMAT}`;
 
     const privateKeyFilePath = path.resolve(
       __dirname,
@@ -229,5 +233,46 @@ export class DOCloudService {
     }
 
     return containerList;
+  }
+  async getDropletContainer(
+    hostId: string,
+    containerId: string,
+  ): Promise<IContainer> {
+    try {
+      const privateKeyFilePath = path.resolve(
+        __dirname,
+        `../../keys/${DEFAULT_PRIVATE_KEY_FILE_NAME}`,
+      );
+      const username = 'root';
+      const host = await this.getDropletIPv4Address(hostId);
+
+      const ssh = new NodeSSH();
+      await ssh.connect({
+        host: host,
+        username: username,
+        privateKey: privateKeyFilePath,
+      });
+
+      // INFO: get docker container details
+      const getContainerCommand = `docker ps --filter "id=${containerId}" --format ${DOCKER_CONTAINER_FORMAT}`;
+      const getContainerCommandResult = await ssh.exec(getContainerCommand, []);
+      const container = JSON.parse(getContainerCommandResult);
+
+      // INFO: get docker container stats
+      const getContainerStatsCommand = `docker stats --no-stream --format ${DOCKER_CONTAINER_STATS_FORMAT} ${containerId}`;
+      const getContainerStatsCommandResult = await ssh.exec(
+        getContainerStatsCommand,
+        [],
+      );
+      const statsData = JSON.parse(getContainerStatsCommandResult);
+
+      if (statsData) {
+        container.stats = statsData;
+      }
+
+      return container;
+    } catch (error) {
+      throw new HttpErrors[500]('Internal Server Error');
+    }
   }
 }

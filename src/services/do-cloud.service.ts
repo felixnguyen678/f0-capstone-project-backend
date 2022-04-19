@@ -9,6 +9,7 @@ import {
 import get from 'lodash/get';
 import {NodeSSH} from 'node-ssh';
 import path from 'path';
+import {DEFAULT_PRIVATE_KEY_FILE_NAME} from '../constants';
 import {ERequestHeader} from '../constants/enums';
 import {IMonitoringMetrics} from '../types/monitoring';
 import {convertStringToContainerList} from '../utils/container';
@@ -186,14 +187,7 @@ export class DOCloudService {
     return metrics;
   }
 
-  async getDropletContainerList(hostId: string): Promise<TContainerList> {
-    let containerList: TContainerList = [];
-    const getContainerListCommand = `docker ps -a --format '{"id":"{{ .ID }}", "image": "{{ .Image }}", "names":"{{ .Names }}",  "ports":"{{ .Ports }}", "createdAt":"{{ .CreatedAt }}", "status":"{{ .Status }}"}'`;
-
-    const privateKeyFilePath = path.resolve(__dirname, '../../keys/f0-droplet');
-    const username = 'root';
-    let host = '';
-
+  async getDropletIPv4Address(hostId: string): Promise<string> {
     try {
       const droplet = await this.getDropletById(hostId);
       const ipAddress = get(droplet, 'droplet.networks.v4[0].ip_address');
@@ -201,12 +195,24 @@ export class DOCloudService {
       if (!ipAddress) {
         throw new HttpErrors[400]('Bad Request Error');
       }
-      host = ipAddress;
+
+      return ipAddress;
     } catch (error) {
-      if (error instanceof Error) {
-        throw new HttpErrors[400](error.message);
-      }
+      throw new HttpErrors[400](error.message);
     }
+  }
+
+  async getDropletContainerList(hostId: string): Promise<TContainerList> {
+    let containerList: TContainerList = [];
+    const getContainerListCommand = `docker ps -a --format '{"id":"{{ .ID }}", "image": "{{ .Image }}", "names":"{{ .Names }}",  "ports":"{{ .Ports }}", "createdAt":"{{ .CreatedAt }}", "status":"{{ .Status }}"}'`;
+
+    const privateKeyFilePath = path.resolve(
+      __dirname,
+      `../../keys/${DEFAULT_PRIVATE_KEY_FILE_NAME}`,
+    );
+    const username = 'root';
+    const host = await this.getDropletIPv4Address(hostId);
+
     const ssh = new NodeSSH();
 
     try {
@@ -218,10 +224,8 @@ export class DOCloudService {
       const commandResult = await ssh.exec(getContainerListCommand, []);
       containerList = convertStringToContainerList(commandResult);
     } catch (error) {
-      if (error instanceof Error) {
-        // INFO: may be droplet haven't installed docker yet
-        throw new HttpErrors[500]('Internal Server Error');
-      }
+      // INFO: may be droplet haven't installed docker yet
+      throw new HttpErrors[500]('Internal Server Error');
     }
 
     return containerList;

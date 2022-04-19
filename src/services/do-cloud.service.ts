@@ -7,7 +7,7 @@ import {
   IListDropletsApiResponse,
 } from 'dots-wrapper/dist/droplet';
 import get from 'lodash/get';
-import {NodeSSH} from 'node-ssh';
+import {Config, NodeSSH} from 'node-ssh';
 import path from 'path';
 import {DEFAULT_PRIVATE_KEY_FILE_NAME} from '../constants';
 import {
@@ -206,25 +206,30 @@ export class DOCloudService {
     }
   }
 
-  async getDropletContainerList(hostId: string): Promise<TContainerList> {
-    let containerList: TContainerList = [];
-    const getContainerListCommand = `docker ps -a --format ${DOCKER_CONTAINER_FORMAT}`;
+  public async getDefaultSSHConfig(hostId: string): Promise<Config> {
+    const ipAddress = await this.getDropletIPv4Address(hostId);
 
     const privateKeyFilePath = path.resolve(
       __dirname,
       `../../keys/${DEFAULT_PRIVATE_KEY_FILE_NAME}`,
     );
-    const username = 'root';
-    const host = await this.getDropletIPv4Address(hostId);
 
-    const ssh = new NodeSSH();
+    return {
+      host: ipAddress,
+      username: 'root',
+      privateKey: privateKeyFilePath,
+    };
+  }
+
+  async getDropletContainerList(hostId: string): Promise<TContainerList> {
+    let containerList: TContainerList = [];
+    const getContainerListCommand = `docker ps -a --format ${DOCKER_CONTAINER_FORMAT}`;
 
     try {
-      await ssh.connect({
-        host: host,
-        username: username,
-        privateKey: privateKeyFilePath,
-      });
+      const ssh = new NodeSSH();
+      const config = await this.getDefaultSSHConfig(hostId);
+      await ssh.connect(config);
+
       const commandResult = await ssh.exec(getContainerListCommand, []);
       containerList = convertStringToContainerList(commandResult);
     } catch (error) {
@@ -239,19 +244,9 @@ export class DOCloudService {
     containerId: string,
   ): Promise<IContainer> {
     try {
-      const privateKeyFilePath = path.resolve(
-        __dirname,
-        `../../keys/${DEFAULT_PRIVATE_KEY_FILE_NAME}`,
-      );
-      const username = 'root';
-      const host = await this.getDropletIPv4Address(hostId);
-
       const ssh = new NodeSSH();
-      await ssh.connect({
-        host: host,
-        username: username,
-        privateKey: privateKeyFilePath,
-      });
+      const config = await this.getDefaultSSHConfig(hostId);
+      await ssh.connect(config);
 
       // INFO: get docker container details
       const getContainerCommand = `docker ps --filter "id=${containerId}" --format ${DOCKER_CONTAINER_FORMAT}`;
@@ -271,6 +266,22 @@ export class DOCloudService {
       }
 
       return container;
+    } catch (error) {
+      throw new HttpErrors[500]('Internal Server Error');
+    }
+  }
+
+  async startDropletContainer(
+    hostId: string,
+    containerId: string,
+  ): Promise<void> {
+    try {
+      const ssh = new NodeSSH();
+      const config = await this.getDefaultSSHConfig(hostId);
+      await ssh.connect(config);
+
+      const startContainerCommand = `docker start ${containerId}`;
+      await ssh.exec(startContainerCommand, []);
     } catch (error) {
       throw new HttpErrors[500]('Internal Server Error');
     }

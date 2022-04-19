@@ -118,10 +118,11 @@ export class DOCloudController {
 
     return containerList;
   }
+
   @get(`${BASE_BATH}/containers/{id}`)
   @intercept(doCloudAuthInterceptor)
   @response(200)
-  async doDropletContainerList(
+  async getDropletContainer(
     @param.query.string('hostId') hostId: string,
     @param.path.string('id') containerId: string,
   ): Promise<IContainer> {
@@ -131,5 +132,15 @@ export class DOCloudController {
     );
 
     return container;
+  }
+
+  @post(`${BASE_BATH}/containers/{id}/start`)
+  @intercept(doCloudAuthInterceptor)
+  @response(200)
+  async startDropletContainer(
+    @param.query.string('hostId') hostId: string,
+    @param.path.string('id') containerId: string,
+  ): Promise<void> {
+    await this.doCloudService.startDropletContainer(hostId, containerId);
   }
 }

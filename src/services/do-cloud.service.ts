@@ -1,4 +1,3 @@
-import {TContainerList} from './../types/container';
 import {inject} from '@loopback/core';
 import {HttpErrors, Request, RestBindings} from '@loopback/rest';
 import {createApiClient} from 'dots-wrapper';
@@ -9,6 +8,7 @@ import {
 } from 'dots-wrapper/dist/droplet';
 import get from 'lodash/get';
 import {NodeSSH} from 'node-ssh';
+import path from 'path';
 import {ERequestHeader} from '../constants/enums';
 import {IMonitoringMetrics} from '../types/monitoring';
 import {convertStringToContainerList} from '../utils/container';
@@ -23,8 +23,7 @@ import {
   EBandwidthNetworkInterface,
   EBandwidthTrafficDirection,
 } from './../constants/enums/monitoring';
-
-const path = require('path');
+import {TContainerList} from './../types/container';
 
 export class DOCloudService {
   private apiClient;

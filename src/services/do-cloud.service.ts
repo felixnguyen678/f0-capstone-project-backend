@@ -8,6 +8,7 @@ import {
   IListDropletsApiResponse,
 } from 'dots-wrapper/dist/droplet';
 import get from 'lodash/get';
+import {NodeSSH} from 'node-ssh';
 import {ERequestHeader} from '../constants/enums';
 import {IMonitoringMetrics} from '../types/monitoring';
 import {convertStringToContainerList} from '../utils/container';
@@ -24,7 +25,6 @@ import {
 } from './../constants/enums/monitoring';
 
 const path = require('path');
-const {NodeSSH} = require('node-ssh');
 
 export class DOCloudService {
   private apiClient;

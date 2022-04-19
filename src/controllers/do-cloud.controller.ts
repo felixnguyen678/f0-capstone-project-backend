@@ -1,7 +1,11 @@
+import {TContainerList} from './../types/container';
 import {intercept, service} from '@loopback/core';
 import {get, param, post, requestBody, response} from '@loopback/rest';
 import {IGetAccountApiResponse} from 'dots-wrapper/dist/account';
-import {IListDropletsApiResponse} from 'dots-wrapper/dist/droplet';
+import {
+  IListDropletsApiResponse,
+  IGetDropletApiResponse,
+} from 'dots-wrapper/dist/droplet';
 import {
   EBandwidthNetworkInterface,
   EBandwidthTrafficDirection,
@@ -36,6 +40,17 @@ export class DOCloudController {
     return dropletList;
   }
 
+  @get(`${BASE_BATH}/droplets/{hostId}`)
+  @intercept(doCloudAuthInterceptor)
+  @response(200)
+  async getDropletById(
+    @param.path.string('hostId') hostId: string,
+  ): Promise<IGetDropletApiResponse> {
+    const droplet = await this.doCloudService.getDropletById(hostId);
+
+    return droplet;
+  }
+
   @get(`${BASE_BATH}/monitoring/metrics/bandwidth`)
   @intercept(doCloudAuthInterceptor)
   @response(200)
@@ -68,10 +83,10 @@ export class DOCloudController {
     @param.query.string('start') start: string,
     @param.query.string('end') end: string,
   ): Promise<IMonitoringMetrics> {
-    const dropletBandwidthMetrics =
+    const dropletMemoryMetrics =
       await this.doCloudService.getDropletUsedMemoryMetrics(hostId, start, end);
 
-    return dropletBandwidthMetrics;
+    return dropletMemoryMetrics;
   }
 
   @get(`${BASE_BATH}/monitoring/metrics/cpu`)
@@ -82,9 +97,25 @@ export class DOCloudController {
     @param.query.string('start') start: string,
     @param.query.string('end') end: string,
   ): Promise<IMonitoringMetrics> {
-    const dropletBandwidthMetrics =
-      await this.doCloudService.getDropletCPUMetrics(hostId, start, end);
+    const dropletCPUMetrics = await this.doCloudService.getDropletCPUMetrics(
+      hostId,
+      start,
+      end,
+    );
 
-    return dropletBandwidthMetrics;
+    return dropletCPUMetrics;
+  }
+
+  @get(`${BASE_BATH}/containers`)
+  @intercept(doCloudAuthInterceptor)
+  @response(200)
+  async doDropletContainerList(
+    @param.query.string('hostId') hostId: string,
+  ): Promise<TContainerList> {
+    const containerList = await this.doCloudService.getDropletContainerList(
+      hostId,
+    );
+
+    return containerList;
   }
 }

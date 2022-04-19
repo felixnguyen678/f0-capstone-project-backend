@@ -3,5 +3,6 @@ out/
 dist/
 
 .env
+keys/
 
 tsconfig.tsbuildinfo

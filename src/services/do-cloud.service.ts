@@ -1,11 +1,16 @@
+import {TContainerList} from './../types/container';
 import {inject} from '@loopback/core';
 import {HttpErrors, Request, RestBindings} from '@loopback/rest';
 import {createApiClient} from 'dots-wrapper';
 import {IGetAccountApiResponse} from 'dots-wrapper/dist/account';
-import {IListDropletsApiResponse} from 'dots-wrapper/dist/droplet';
+import {
+  IGetDropletApiResponse,
+  IListDropletsApiResponse,
+} from 'dots-wrapper/dist/droplet';
 import get from 'lodash/get';
 import {ERequestHeader} from '../constants/enums';
 import {IMonitoringMetrics} from '../types/monitoring';
+import {convertStringToContainerList} from '../utils/container';
 import {
   calculateUsedMemoryPercentage,
   convertValuesToChartData,
@@ -17,6 +22,9 @@ import {
   EBandwidthNetworkInterface,
   EBandwidthTrafficDirection,
 } from './../constants/enums/monitoring';
+
+const path = require('path');
+const {NodeSSH} = require('node-ssh');
 
 export class DOCloudService {
   private apiClient;
@@ -38,6 +46,15 @@ export class DOCloudService {
       per_page: 100,
     };
     const response = await this.apiClient.droplet.listDroplets(input);
+
+    return response.data;
+  }
+
+  async getDropletById(hostId: string): Promise<IGetDropletApiResponse> {
+    const dropletId = Number(hostId);
+    const response = await this.apiClient.droplet.getDroplet({
+      droplet_id: dropletId,
+    });
 
     return response.data;
   }
@@ -168,5 +185,46 @@ export class DOCloudService {
     }
 
     return metrics;
+  }
+
+  async getDropletContainerList(hostId: string): Promise<TContainerList> {
+    let containerList: TContainerList = [];
+    const getContainerListCommand = `docker ps --format '{"id":"{{ .ID }}", "image": "{{ .Image }}", "names":"{{ .Names }}",  "ports":"{{ .Ports }}", "createdAt":"{{ .CreatedAt }}", "status":"{{ .Status }}"}'`;
+
+    const privateKeyFilePath = path.resolve(__dirname, '../../keys/f0-droplet');
+    const username = 'root';
+    let host = '';
+
+    try {
+      const droplet = await this.getDropletById(hostId);
+      const ipAddress = get(droplet, 'droplet.networks.v4[0].ip_address');
+
+      if (!ipAddress) {
+        throw new HttpErrors[400]('Bad Request Error');
+      }
+      host = ipAddress;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new HttpErrors[400](error.message);
+      }
+    }
+    const ssh = new NodeSSH();
+
+    try {
+      await ssh.connect({
+        host: host,
+        username: username,
+        privateKey: privateKeyFilePath,
+      });
+      const commandResult = await ssh.exec(getContainerListCommand, []);
+      containerList = convertStringToContainerList(commandResult);
+    } catch (error) {
+      if (error instanceof Error) {
+        // INFO: may be droplet haven't installed docker yet
+        throw new HttpErrors[500]('Internal Server Error');
+      }
+    }
+
+    return containerList;
   }
 }

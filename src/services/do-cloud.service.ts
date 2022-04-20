@@ -221,7 +221,10 @@ export class DOCloudService {
     };
   }
 
-  async getDropletContainerList(hostId: string): Promise<TContainerList> {
+  async getDropletContainerList(
+    hostId: string,
+    keyword?: string,
+  ): Promise<TContainerList> {
     let containerList: TContainerList = [];
     const getContainerListCommand = `docker ps -a --format ${DOCKER_CONTAINER_FORMAT}`;
 
@@ -232,13 +235,20 @@ export class DOCloudService {
 
       const commandResult = await ssh.exec(getContainerListCommand, []);
       containerList = convertStringToContainerList(commandResult);
+
+      if (!keyword) {
+        return containerList;
+      }
+
+      return containerList.filter(container => {
+        return container.names.includes(keyword);
+      });
     } catch (error) {
       // INFO: may be droplet haven't installed docker yet
       throw new HttpErrors[500]('Internal Server Error');
     }
-
-    return containerList;
   }
+
   async getDropletContainer(
     hostId: string,
     containerId: string,
@@ -329,8 +339,6 @@ export class DOCloudService {
       await ssh.connect(config);
 
       const removeContainerCommand = `docker rm --force ${containerId}`;
-
-      console.log({removeContainerCommand});
 
       await ssh.exec(removeContainerCommand, []);
     } catch (error) {

@@ -111,9 +111,11 @@ export class DOCloudController {
   @response(200)
   async getDODropletContainerList(
     @param.query.string('hostId') hostId: string,
+    @param.query.string('keyword') keyword?: string,
   ): Promise<TContainerList> {
     const containerList = await this.doCloudService.getDropletContainerList(
       hostId,
+      keyword,
     );
 
     return containerList;

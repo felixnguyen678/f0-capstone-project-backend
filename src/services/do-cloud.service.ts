@@ -259,7 +259,7 @@ export class DOCloudService {
       await ssh.connect(config);
 
       // INFO: get docker container details
-      const getContainerCommand = `docker ps --filter "id=${containerId}" --format ${DOCKER_CONTAINER_FORMAT}`;
+      const getContainerCommand = `docker ps --filter "id=${containerId}" -a --format ${DOCKER_CONTAINER_FORMAT}`;
       const getContainerCommandResult = await ssh.exec(getContainerCommand, []);
       const container = JSON.parse(getContainerCommandResult);
 

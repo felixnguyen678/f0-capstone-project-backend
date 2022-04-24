@@ -1,10 +1,9 @@
-import {TContainerList} from './../types/container';
 import {intercept, service} from '@loopback/core';
-import {get, param, post, requestBody, response} from '@loopback/rest';
+import {get, param, post, response} from '@loopback/rest';
 import {IGetAccountApiResponse} from 'dots-wrapper/dist/account';
 import {
-  IListDropletsApiResponse,
   IGetDropletApiResponse,
+  IListDropletsApiResponse,
 } from 'dots-wrapper/dist/droplet';
 import {
   EBandwidthNetworkInterface,
@@ -13,6 +12,7 @@ import {
 import {doCloudAuthInterceptor} from '../interceptors';
 import {DOCloudService} from '../services';
 import {IMonitoringMetrics} from '../types/monitoring';
+import {IContainer, TContainerList} from './../types/container';
 
 const BASE_BATH = '/do-api';
 
@@ -109,13 +109,70 @@ export class DOCloudController {
   @get(`${BASE_BATH}/containers`)
   @intercept(doCloudAuthInterceptor)
   @response(200)
-  async doDropletContainerList(
+  async getDODropletContainerList(
     @param.query.string('hostId') hostId: string,
+    @param.query.string('keyword') keyword?: string,
   ): Promise<TContainerList> {
     const containerList = await this.doCloudService.getDropletContainerList(
       hostId,
+      keyword,
     );
 
     return containerList;
+  }
+
+  @get(`${BASE_BATH}/containers/{id}`)
+  @intercept(doCloudAuthInterceptor)
+  @response(200)
+  async getDropletContainer(
+    @param.query.string('hostId') hostId: string,
+    @param.path.string('id') containerId: string,
+  ): Promise<IContainer> {
+    const container = await this.doCloudService.getDropletContainer(
+      hostId,
+      containerId,
+    );
+
+    return container;
+  }
+
+  @post(`${BASE_BATH}/containers/{id}/start`)
+  @intercept(doCloudAuthInterceptor)
+  @response(200)
+  async startDropletContainer(
+    @param.query.string('hostId') hostId: string,
+    @param.path.string('id') containerId: string,
+  ): Promise<void> {
+    await this.doCloudService.startDropletContainer(hostId, containerId);
+  }
+
+  @post(`${BASE_BATH}/containers/{id}/restart`)
+  @intercept(doCloudAuthInterceptor)
+  @response(200)
+  async restartDropletContainer(
+    @param.query.string('hostId') hostId: string,
+    @param.path.string('id') containerId: string,
+  ): Promise<void> {
+    await this.doCloudService.restartDropletContainer(hostId, containerId);
+  }
+
+  @post(`${BASE_BATH}/containers/{id}/stop`)
+  @intercept(doCloudAuthInterceptor)
+  @response(200)
+  async stopDropletContainer(
+    @param.query.string('hostId') hostId: string,
+    @param.path.string('id') containerId: string,
+  ): Promise<void> {
+    await this.doCloudService.stopDropletContainer(hostId, containerId);
+  }
+
+  @post(`${BASE_BATH}/containers/{id}/remove`)
+  @intercept(doCloudAuthInterceptor)
+  @response(200)
+  async removeDropletContainer(
+    @param.query.string('hostId') hostId: string,
+    @param.path.string('id') containerId: string,
+  ): Promise<void> {
+    await this.doCloudService.removeDropletContainer(hostId, containerId);
   }
 }

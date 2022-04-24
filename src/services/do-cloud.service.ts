@@ -7,8 +7,13 @@ import {
   IListDropletsApiResponse,
 } from 'dots-wrapper/dist/droplet';
 import get from 'lodash/get';
-import {NodeSSH} from 'node-ssh';
+import {Config, NodeSSH} from 'node-ssh';
 import path from 'path';
+import {DEFAULT_PRIVATE_KEY_FILE_NAME} from '../constants';
+import {
+  DOCKER_CONTAINER_FORMAT,
+  DOCKER_CONTAINER_STATS_FORMAT,
+} from '../constants/docker-cmd';
 import {ERequestHeader} from '../constants/enums';
 import {IMonitoringMetrics} from '../types/monitoring';
 import {convertStringToContainerList} from '../utils/container';
@@ -23,7 +28,7 @@ import {
   EBandwidthNetworkInterface,
   EBandwidthTrafficDirection,
 } from './../constants/enums/monitoring';
-import {TContainerList} from './../types/container';
+import {IContainer, TContainerList} from './../types/container';
 
 export class DOCloudService {
   private apiClient;
@@ -186,14 +191,7 @@ export class DOCloudService {
     return metrics;
   }
 
-  async getDropletContainerList(hostId: string): Promise<TContainerList> {
-    let containerList: TContainerList = [];
-    const getContainerListCommand = `docker ps -a --format '{"id":"{{ .ID }}", "image": "{{ .Image }}", "names":"{{ .Names }}",  "ports":"{{ .Ports }}", "createdAt":"{{ .CreatedAt }}", "status":"{{ .Status }}"}'`;
-
-    const privateKeyFilePath = path.resolve(__dirname, '../../keys/f0-droplet');
-    const username = 'root';
-    let host = '';
-
+  async getDropletIPv4Address(hostId: string): Promise<string> {
     try {
       const droplet = await this.getDropletById(hostId);
       const ipAddress = get(droplet, 'droplet.networks.v4[0].ip_address');
@@ -201,29 +199,150 @@ export class DOCloudService {
       if (!ipAddress) {
         throw new HttpErrors[400]('Bad Request Error');
       }
-      host = ipAddress;
+
+      return ipAddress;
     } catch (error) {
-      if (error instanceof Error) {
-        throw new HttpErrors[400](error.message);
-      }
+      throw new HttpErrors[400](error.message);
     }
-    const ssh = new NodeSSH();
+  }
+
+  public async getDefaultSSHConfig(hostId: string): Promise<Config> {
+    const ipAddress = await this.getDropletIPv4Address(hostId);
+
+    const privateKeyFilePath = path.resolve(
+      __dirname,
+      `../../keys/${DEFAULT_PRIVATE_KEY_FILE_NAME}`,
+    );
+
+    return {
+      host: ipAddress,
+      username: 'root',
+      privateKey: privateKeyFilePath,
+    };
+  }
+
+  async getDropletContainerList(
+    hostId: string,
+    keyword?: string,
+  ): Promise<TContainerList> {
+    let containerList: TContainerList = [];
+    const getContainerListCommand = `docker ps -a --format ${DOCKER_CONTAINER_FORMAT}`;
 
     try {
-      await ssh.connect({
-        host: host,
-        username: username,
-        privateKey: privateKeyFilePath,
-      });
+      const ssh = new NodeSSH();
+      const config = await this.getDefaultSSHConfig(hostId);
+      await ssh.connect(config);
+
       const commandResult = await ssh.exec(getContainerListCommand, []);
       containerList = convertStringToContainerList(commandResult);
-    } catch (error) {
-      if (error instanceof Error) {
-        // INFO: may be droplet haven't installed docker yet
-        throw new HttpErrors[500]('Internal Server Error');
-      }
-    }
 
-    return containerList;
+      if (!keyword) {
+        return containerList;
+      }
+
+      return containerList.filter(container => {
+        return container.names.includes(keyword);
+      });
+    } catch (error) {
+      // INFO: may be droplet haven't installed docker yet
+      throw new HttpErrors[500]('Internal Server Error');
+    }
+  }
+
+  async getDropletContainer(
+    hostId: string,
+    containerId: string,
+  ): Promise<IContainer> {
+    try {
+      const ssh = new NodeSSH();
+      const config = await this.getDefaultSSHConfig(hostId);
+      await ssh.connect(config);
+
+      // INFO: get docker container details
+      const getContainerCommand = `docker ps --filter "id=${containerId}" -a --format ${DOCKER_CONTAINER_FORMAT}`;
+      const getContainerCommandResult = await ssh.exec(getContainerCommand, []);
+      const container = JSON.parse(getContainerCommandResult);
+
+      // INFO: get docker container stats
+      const getContainerStatsCommand = `docker stats --no-stream --format ${DOCKER_CONTAINER_STATS_FORMAT} ${containerId}`;
+      const getContainerStatsCommandResult = await ssh.exec(
+        getContainerStatsCommand,
+        [],
+      );
+      const statsData = JSON.parse(getContainerStatsCommandResult);
+
+      if (statsData) {
+        container.stats = statsData;
+      }
+
+      return container;
+    } catch (error) {
+      throw new HttpErrors[500]('Internal Server Error');
+    }
+  }
+
+  async startDropletContainer(
+    hostId: string,
+    containerId: string,
+  ): Promise<void> {
+    try {
+      const ssh = new NodeSSH();
+      const config = await this.getDefaultSSHConfig(hostId);
+      await ssh.connect(config);
+
+      const startContainerCommand = `docker start ${containerId}`;
+      await ssh.exec(startContainerCommand, []);
+    } catch (error) {
+      throw new HttpErrors[500]('Internal Server Error');
+    }
+  }
+
+  async restartDropletContainer(
+    hostId: string,
+    containerId: string,
+  ): Promise<void> {
+    try {
+      const ssh = new NodeSSH();
+      const config = await this.getDefaultSSHConfig(hostId);
+      await ssh.connect(config);
+
+      const restartContainerCommand = `docker restart ${containerId}`;
+      await ssh.exec(restartContainerCommand, []);
+    } catch (error) {
+      throw new HttpErrors[500]('Internal Server Error');
+    }
+  }
+
+  async stopDropletContainer(
+    hostId: string,
+    containerId: string,
+  ): Promise<void> {
+    try {
+      const ssh = new NodeSSH();
+      const config = await this.getDefaultSSHConfig(hostId);
+      await ssh.connect(config);
+
+      const stopContainerCommand = `docker stop ${containerId}`;
+      await ssh.exec(stopContainerCommand, []);
+    } catch (error) {
+      throw new HttpErrors[500]('Internal Server Error');
+    }
+  }
+
+  async removeDropletContainer(
+    hostId: string,
+    containerId: string,
+  ): Promise<void> {
+    try {
+      const ssh = new NodeSSH();
+      const config = await this.getDefaultSSHConfig(hostId);
+      await ssh.connect(config);
+
+      const removeContainerCommand = `docker rm --force ${containerId}`;
+
+      await ssh.exec(removeContainerCommand, []);
+    } catch (error) {
+      throw new HttpErrors[500]('Internal Server Error');
+    }
   }
 }
